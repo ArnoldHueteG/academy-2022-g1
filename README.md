@@ -4,6 +4,8 @@
 
 TODO: Here it goes the initial configuration setup to be able to run the pipelines.
 
+install gcloud, storage, bq
+
 ## Pipelines
 
 These are scripts to move data from gcs to bigquery using dataproc ephemeral clusters.
