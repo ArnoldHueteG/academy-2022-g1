@@ -28,6 +28,6 @@ bq mk -t crypto.crypto_historical_prices
 gcloud dataproc jobs submit pyspark dataproc/bin/gcs_to_bq.py \
     --cluster=${CLUSTER} \
     --region=${REGION} \
-    --jars=gs://spark-lib/bigquery/spark-bigquery-latest.jar \
+    --jars=gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar \
     -- gs://${BUCKET_NAME}/input/ gs://${BUCKET_NAME}/output/
 

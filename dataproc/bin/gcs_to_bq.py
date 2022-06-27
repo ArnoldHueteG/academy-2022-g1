@@ -27,19 +27,23 @@ import sys
 import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
 
-if len(sys.argv) != 3:
-  raise Exception("Exactly 3 arguments are required: <inputUri> <outputUri>")
-
-inputUri=sys.argv[1]
-outputUri=sys.argv[2]
+# if len(sys.argv) != 3:
+#   raise Exception("Exactly 3 arguments are required: <inputUri> <outputUri>")
+BUCKET_NAME = "academy-2022-g1"
+inputUri=f"gs://{BUCKET_NAME}/input/"#sys.argv[1]
+outputUri=f"gs://{BUCKET_NAME}/output/"#sys.argv[2]
 # outputTable=sys.argv[3]
 
-spark = SparkSession.builder.appName('Spark').getOrCreate()
-sc = pyspark.SparkContext()
-sc = sc.toDF()
+spark = SparkSession \
+  .builder \
+  .master('yarn') \
+  .appName('spark-bigquery-demo') \
+  .getOrCreate()
+#sc = pyspark.SparkContext()#error
+#sc = sc.toDF()
 
 # Read CSV files into a dataframe
-files = sc.read.csv(
+files = spark.read.csv(
     f'{inputUri}coin_*.csv', 
     header=True,
     inferSchema=True
@@ -75,4 +79,6 @@ crypto_historical_prices_3.show()
 #   .option('table', f'{outputDataset}.{outputTable}') \
 #   .save()
 
-crypto_historical_prices_3.saveAsTextFile(sys.argv[2])
+#crypto_historical_prices_3.saveAsTextFile(sys.argv[2])
+
+#crypto_historical_prices_3.writeTo

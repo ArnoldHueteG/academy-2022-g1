@@ -1,3 +1,4 @@
+# Gcloud Setup ##################
 sudo apt-get install apt-transport-https ca-certificates gnupg
 
 # Add the gcloud CLI distribution URI as a package source
@@ -9,16 +10,18 @@ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyr
 # Update and install the gcloud CLI
 sudo apt-get update && sudo apt-get install google-cloud-cli
 
-# Install or upgrade bigquery client library
-pip install --upgrade google-cloud-bigquery
-
-# Install or upgrade cloud storage client library
-pip install --upgrade google-cloud-storage
-
-pip install --upgrade pyspark
-
 # Run gcloud
 gcloud init
 
 # gcloud authenticate
 gcloud auth login --brief --launch-browser --update-adc
+
+# Python Setup ##################
+# Create environment
+python3 -m venv .venv
+
+# Activate environment
+source .venv/bin/activate
+
+# Install requirements.txt
+pip install -r requirements.txt
