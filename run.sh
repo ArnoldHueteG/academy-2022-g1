@@ -15,6 +15,8 @@ pip install --upgrade google-cloud-bigquery
 # Install or upgrade cloud storage client library
 pip install --upgrade google-cloud-storage
 
+pip install --upgrade pyspark
+
 # Run gcloud
 gcloud init
 

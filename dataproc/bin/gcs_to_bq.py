@@ -1,79 +1,78 @@
-# This scripts access to a cloud storage bucket, lists all the files in a determined location
+# #!/usr/bin/env python
+# """BigQuery I/O PySpark example."""
 
-from google.cloud import bigquery
-from google.cloud import storage
-from google.cloud.exceptions import NotFound
+# import pyspark
+# import sys
 
-# Construct a Cloud Storage client object.
-storage_client = storage.Client()
-# Construct a BigQuery client object.
-client = bigquery.Client()
+# if len(sys.argv) != 3:
+#   raise Exception("Exactly 2 arguments are required: <inputUri> <outputUri>")
 
-def dataset_exists(dataset_id):
-    """Determines existence of the dataset."""
-    # dataset_id = "project.dataset"
+# inputUri=sys.argv[1]
+# outputUri=sys.argv[2]
 
-    try:
-        client.get_dataset(dataset_id)  # Make an API request.
-        print("Dataset {} already exists".format(dataset_id))
-        return True
-    except NotFound:
-        print("Dataset {} is not found".format(dataset_id))
-        return False
+# sc = pyspark.SparkContext()
 
-def create_dataset():
-    # Set dataset_id to the ID of the dataset to create.
-    dataset_id = "{}.cryptocurrency_historical_prices".format(client.project)
+# textFile = sc.textFile(inputUri)
 
-    # Construct a full Dataset object to send to the API.
-    dataset = bigquery.Dataset(dataset_id)
+# textFile.collect()
+# textFile.saveAsTextFile(sys.argv[2])
 
-    # Specify the geographic location where the dataset should reside.
-    dataset.location = "US"
 
-    # Send the dataset to the API for creation, with an explicit timeout.
-    # Raises google.api_core.exceptions.Conflict if the Dataset already
-    # exists within the project.
-    dataset = client.create_dataset(dataset, timeout=30)  # Make an API request.
-    print("Created dataset {}.{}".format(client.project, dataset.dataset_id))
+#____
 
-def create_table_from_csv(dataset, table_name, uri):
-    # Set table_id to the ID of the table to create.
-    table_id = f"secret-tide-353414.{dataset}.{table_name}"
+#!/usr/bin/env python
 
-    job_config = bigquery.LoadJobConfig(
-        schema=[
-            bigquery.SchemaField("SNo", "INT64"),
-            bigquery.SchemaField("Name", "STRING"),
-            bigquery.SchemaField("Symbol", "STRING"),
-            bigquery.SchemaField("Date", "STRING"),
-            bigquery.SchemaField("High", "FLOAT64"),
-            bigquery.SchemaField("Low", "FLOAT64"),
-            bigquery.SchemaField("Open", "FLOAT64"),
-            bigquery.SchemaField("Close", "FLOAT64"),
-            bigquery.SchemaField("Volume", "FLOAT64"),
-            bigquery.SchemaField("Marketcap", "FLOAT64"),
-        ],
-        skip_leading_rows=1,
-        # The source format defaults to CSV, so the line below is optional.
-        source_format=bigquery.SourceFormat.CSV,
-    )
+import pyspark
+import sys
+import pyspark.sql.functions as F
+from pyspark.sql import SparkSession
 
-    load_job = client.load_table_from_uri(
-        uri, table_id, job_config=job_config
-    )  # Make an API request.
+if len(sys.argv) != 3:
+  raise Exception("Exactly 3 arguments are required: <inputUri> <outputUri>")
 
-    load_job.result()  # Waits for the job to complete.
+inputUri=sys.argv[1]
+outputUri=sys.argv[2]
+# outputTable=sys.argv[3]
 
-    destination_table = client.get_table(table_id)  # Make an API request.
-    print("Loaded {} rows.".format(destination_table.num_rows))
+spark = SparkSession.builder.appName('Spark').getOrCreate()
+sc = pyspark.SparkContext()
+sc = sc.toDF()
 
-bucket_name = 'academy-2022-g1'
-prefix = 'coin_'
-uri = f"gs://{bucket_name}/{prefix}*"
+# Read CSV files into a dataframe
+files = sc.read.csv(
+    f'{inputUri}coin_*.csv', 
+    header=True,
+    inferSchema=True
+)
 
-if not dataset_exists('cryptocurrency_historical_prices'):
-    create_dataset()
+# Check the schema
+files.printSchema()
 
-create_table_from_csv('cryptocurrency_historical_prices', 'crypto_prices', uri)
+# crypto_historical_prices.orderBy(crypto_historical_prices.SNo).collect()
 
+crypto_historical_prices = files.drop('SNo')
+
+date_splitted = F.split(crypto_historical_prices['Date'], ' ')
+
+crypto_historical_prices_1 = crypto_historical_prices.withColumn('NewDate', date_splitted.getItem(0)) \
+                                                     .withColumn('Hour', date_splitted.getItem(1))
+
+# crypto_historical_prices_grouped = crypto_historical_prices.groupBy('Date', 'High')
+
+# crypto_historical_prices_1.collect()
+
+print('Counting disntict hour values:')
+crypto_historical_prices_1.select(F.countDistinct('Hour')).show()   # They're all the same, so we just drop this column
+
+crypto_historical_prices_2 = crypto_historical_prices_1.withColumn('Date', crypto_historical_prices_1['NewDate'])
+crypto_historical_prices_3 = crypto_historical_prices_2.drop('Hour', 'NewDate')
+
+crypto_historical_prices_3.show()
+
+# crypto_historical_prices_3.saveAsTextFile(sys.argv[2])
+
+# crypto_historical_prices_3.write.format('bigquery') \
+#   .option('table', f'{outputDataset}.{outputTable}') \
+#   .save()
+
+crypto_historical_prices_3.saveAsTextFile(sys.argv[2])
