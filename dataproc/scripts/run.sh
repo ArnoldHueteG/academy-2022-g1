@@ -1,17 +1,16 @@
-# Create cluster
-gcloud dataproc clusters create cluster-academy \
-    --region=us-central1 \
-    --master-machine-type=n1-standard-2 \
-    --worker-machine-type=n1-standard-2 \
-    --num-workers=2 \
-    --master-boot-disk-size=30GB \
-    --num-masters=1 \
-    --worker-boot-disk-size=30GB \
+echo 'Crypto historical data pyspark job'
+echo ''
+echo 'Choose the execution mode:'
+echo '[0] Run in local'
+echo '[1] Run in cluster'
+read LOCAL_OR_CLUSTER
 
-# gcloud compute ssh cluster-academy-m
+if [ ${LOCAL_OR_CLUSTER} == 0 ]; then
+    echo 'Running job in local machine'
+    python3 dataproc/bin/gcs_to_bq.py '/home/luz.plaja/projects/academy-2022-g1/input' '/tmp/spark_output/datacsv'
+else
+    echo 'Running job in cluster'
+    bash dataproc/scripts/run_cluster.sh
+fi
 
-gcloud dataproc jobs submit pyspark wordcount.py \
-    --cluster=cluster-name \
-    --region=region \
-    --jars=gs://spark-lib/bigquery/spark-bigquery-latest.jar
 
