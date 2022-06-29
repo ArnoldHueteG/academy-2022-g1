@@ -1,33 +1,16 @@
-PROJECT=secret-tide-353414
-BUCKET_NAME=academy-2022-g1
-CLUSTER=cluster-academy
-REGION=us-central1
-DATASET=crypto
-TABLE=crypto_historical_prices
+echo 'Crypto historical data pyspark job'
+echo ''
+echo 'Choose the execution mode:'
+echo '[0] Run in local'
+echo '[1] Run in cluster'
+read LOCAL_OR_CLUSTER
 
-# Create cluster
-gcloud dataproc clusters create ${CLUSTER} \
-    --region=${REGION} \
-    --single-node
-    # --master-machine-type=n1-standard-2 \
-    # --worker-machine-type=n1-standard-2 \
-    # --num-workers=2 \
-    # --master-boot-disk-size=30GB \
-    # --num-masters=1 \
-    # --worker-boot-disk-size=30GB
+if [ ${LOCAL_OR_CLUSTER} == 0 ]; then
+    echo 'Running job in local machine'
+    python3 dataproc/bin/gcs_to_bq.py '/home/luz.plaja/projects/academy-2022-g1/input' '/tmp/spark_output/datacsv'
+else
+    echo 'Running job in cluster'
+    bash dataproc/scripts/run_cluster.sh
+fi
 
-# gcloud compute ssh cluster-academy-m
-
-# Create dataset
-bq mk crypto
-
-# Create table with schema
-bq mk -t crypto.crypto_historical_prices
-
-# Submit job
-gcloud dataproc jobs submit pyspark dataproc/bin/gcs_to_bq.py \
-    --cluster=${CLUSTER} \
-    --region=${REGION} \
-    --jars=gs://spark-lib/bigquery/spark-bigquery-latest.jar \
-    -- gs://${BUCKET_NAME}/input/ gs://${BUCKET_NAME}/output/
 
