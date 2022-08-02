@@ -1,9 +1,9 @@
-PROJECT=secret-tide-353414
+PROJECT=analog-foundry-357900
 BUCKET_NAME=academy-2022-g1
-CLUSTER=cluster-academy
+CLUSTER=academy-project-luz
 REGION=us-central1
 DATASET=crypto
-TABLE=crypto_historical_prices
+TABLE=historical_prices
 
 # Create cluster
 gcloud dataproc clusters create ${CLUSTER} \
@@ -20,7 +20,7 @@ gcloud dataproc clusters create ${CLUSTER} \
 bq mk crypto
 
 # # Create table with schema
-# bq mk -t crypto.crypto_historical_prices
+# bq mk -t ${DATASET}.${TABLE}
 
 # Submit job
 gcloud dataproc jobs submit pyspark dataproc/bin/gcs_to_bq.py \
@@ -30,4 +30,4 @@ gcloud dataproc jobs submit pyspark dataproc/bin/gcs_to_bq.py \
   -- gs://${BUCKET_NAME}/input/coin_*.csv ${DATASET} ${TABLE}
 
 gcloud dataproc clusters delete ${CLUSTER} \
-  --region=${REGION} \
+  --region=${REGION}

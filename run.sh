@@ -1,3 +1,5 @@
+sudo apt install default-jdk
+
 sudo apt-get install apt-transport-https ca-certificates gnupg
 
 # Add the gcloud CLI distribution URI as a package source
@@ -8,6 +10,10 @@ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyr
 
 # Update and install the gcloud CLI
 sudo apt-get update && sudo apt-get install google-cloud-cli
+
+sudo apt install python3
+
+sudo apt install python3-pip
 
 # Install or upgrade bigquery client library
 pip install --upgrade google-cloud-bigquery
